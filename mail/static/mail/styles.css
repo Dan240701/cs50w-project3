@@ -1,0 +1,12 @@
+textarea {
+    min-height: 400px;
+}
+
+/*Estados del correo*/
+.read{
+    background-color: #808080;
+}
+.unread{
+    background-color: white;
+}
+
