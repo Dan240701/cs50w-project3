@@ -99,7 +99,20 @@ function ver_email(id) {
             archived: true
           })
         })
-        load_mailbox('archive');
+        .then(response => {
+          if (!response.ok){
+            throw new Error('No se pudo archivar el email')
+          }
+          Swal.fire({
+            title: "Mensaje Archivado",
+            icon: "success"
+          });
+          load_mailbox('archive');
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+       
       })
 
       //Evento de desarchivar email
@@ -110,7 +123,20 @@ function ver_email(id) {
             archived: false
           })
         })
-        load_mailbox('inbox');
+        .then(response => {
+          if (!response.ok){
+            throw new Error('Error al recuperar el email')
+          }
+          Swal.fire({
+            title: "Mensaje Reestablecido",
+            icon: "success"
+          });
+          load_mailbox('inbox');
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+       
       })
 
       //Boton de responder email
@@ -202,15 +228,29 @@ function enviar_email(event) {
       body: document.querySelector('#compose-body').value
     })
   })
-    .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw err });
+    }
+    return response.json();
+  })
     .then(result => {
       console.log(result);
       submitButton.disabled = false;
       submitButton.value = 'Enviar';
+      Swal.fire({
+        title: "Mensaje Enviado",
+        icon: "success"
+      });
       load_mailbox('sent');
     })
     .catch(e => {
       console.error('Error:', e);
+      Swal.fire({
+        title: "Error al enviar el mensaje",
+        text: e.error,
+        icon: "error"
+      });
       submitButton.disabled = false;
       submitButton.value = 'Enviar';
     });
