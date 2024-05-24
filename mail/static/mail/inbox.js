@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
   //enviar email
   document.querySelector('#compose-form').addEventListener('submit', enviar_email);
 
+  //Styles a mi textArea de Compose
+  document.querySelector('#compose-body').style.height = "171px";
+
 
   // By default, load the inbox
   load_mailbox('inbox');
@@ -59,9 +62,21 @@ function ver_email(id) {
       </div> 
       <div class="buton-section">
 
-          <button class="btn btn-outline-primary" id="reply">Responder</button>
-          <button class="btn btn-outline-success" id="unarchive" style="display: ${email.archived ? 'inline-block' : 'none'}">Desarchivar</button>
-          <button class="btn btn-outline-danger" id="archive" style="display: ${email.archived ? 'none' : 'inline-block'}"> Archivar</button>
+          <button class="btn btn-outline-primary" id="responder">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
+          </svg>
+          Responder</button>
+          <button class="btn btn-outline-success" id="desarchivar" style="display: ${email.archived ? 'inline-block' : 'none'}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-square" viewBox="0 0 16 16">
+             <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.5 9.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z"/>
+          </svg>
+          Desarchivar</button>
+          <button class="btn btn-outline-danger" id="archivar" style="display: ${email.archived ? 'none' : 'inline-block'}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive" viewBox="0 0 16 16">
+            <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5V5a1 1 0 0 1-1-1zm2 3v7.5A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5V5zm13-3H1v2h14zM5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+          </svg>
+          Archivar</button>
       </div>
     `;
 
@@ -72,11 +87,12 @@ function ver_email(id) {
           body: JSON.stringify({
             read: true
           })
+          
         })
       }
 
       //Evento de archivar email
-      document.querySelector('#archive').addEventListener('click', () => {
+      document.querySelector('#archivar').addEventListener('click', () => {
         fetch(`/emails/${email.id}`, {
           method: 'PUT',
           body: JSON.stringify({
@@ -87,7 +103,7 @@ function ver_email(id) {
       })
 
       //Evento de desarchivar email
-      document.querySelector('#unarchive').addEventListener('click', () => {
+      document.querySelector('#desarchivar').addEventListener('click', () => {
         fetch(`/emails/${email.id}`, {
           method: 'PUT',
           body: JSON.stringify({
@@ -98,15 +114,21 @@ function ver_email(id) {
       })
 
       //Boton de responder email
-      document.querySelector('#reply').addEventListener('click', () => {
+      document.querySelector('#responder').addEventListener('click', () => {
         compose_email();
         document.querySelector('#compose-recipients').value = email.sender;
         if (email.subject.indexOf("Re: ") === -1) {
           email.subject = "Re: " + email.subject;
         }
         document.querySelector('#compose-subject').value = email.subject;
-        document.querySelector('#compose-body').value = `\n On ${email.timestamp} ${email.sender} wrote: \n ${email.body}`;
-
+        document.querySelector('#compose-body').value = `
+        ---------- Forwarded message ---------
+        De: ${email.sender}
+        Fecha: ${email.timestamp}
+        Mensaje:
+        ${email.body}
+        ----------------------------------------
+        `;
       })
 
     });
@@ -115,11 +137,11 @@ function ver_email(id) {
 
 function load_mailbox(mailbox) {
 
-  // Show the mailbox and hide other views
+  // Mostrar el Mailbox y ocultar el bloque de Composicion
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
 
-  // Show the mailbox name
+  // MOSTRAR EL NOMBRE DEL MAILBOX SELECCIONADO
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
   //Mostrar Emails segun mi Mailbox
@@ -150,14 +172,12 @@ function load_mailbox(mailbox) {
         </div>
     `;
 
-       // (Probar estados)
+       // (Testear estados)
         console.log(`Email ${mail.id} is read: ${mail.read}`); 
         console.log(`Email ${mail.id} class: ${email.className}`); 
 
-        //Ver el detalle de los correos(Pendiente)
-        email.addEventListener('click', () => {
-          ver_email(mail.id);
-        })
+        //Ver el detalle de los correos
+        email.addEventListener('click', () => {ver_email(mail.id);})
         document.querySelector('#emails-view').append(email);
 
       });
@@ -189,8 +209,8 @@ function enviar_email(event) {
       submitButton.value = 'Enviar';
       load_mailbox('sent');
     })
-    .catch(error => {
-      console.error('Error:', error);
+    .catch(e => {
+      console.error('Error:', e);
       submitButton.disabled = false;
       submitButton.value = 'Enviar';
     });
